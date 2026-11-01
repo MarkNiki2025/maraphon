@@ -6,6 +6,7 @@ using APIHandler.Models.Feedbacks;
 using APIHandler.Services.Auth;
 using APIHandler.Services.Feedbacks;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace APIHandler.Handlers.Feedbacks;
@@ -35,13 +36,20 @@ public class GetFeedbackForLocationHandler : IApiRequestHandler
                 queryParameters.Page,
                 queryParameters.Type,
                 queryParameters.SortOrder);
-            foreach (var feedback in responseBody.Items)
+
+            if (responseBody?.Items != null)
             {
-                feedback.Username = feedback.UserId is not null
-                    ? await _userService.GetUserName(feedback.UserId) ?? "Anonymous User"
-                    : "Anonymous User";
+                foreach (var feedback in responseBody.Items)
+                {
+                    if (feedback == null) continue;
+
+                    feedback.Username = feedback.UserId is not null
+                        ? await _userService.GetUserName(feedback.UserId) ?? "Anonymous User"
+                        : "Anonymous User";
+                }
             }
-            return ResponseBuilder.CreateSuccessResponse(responseBody);
+
+            return ResponseBuilder.CreateSuccessResponse(responseBody ?? new FeedbackResponse());
         }
         catch (ValidationException ex)
         {
@@ -70,28 +78,41 @@ public class GetFeedbackForLocationHandler : IApiRequestHandler
 
     private static FeedbackQueryParameters ParseQueryParameters(APIGatewayProxyRequest request)
     {
-        if (!request.QueryStringParameters.TryGetValue("locationId", out var locationId) ||
+        var queryString = request.QueryStringParameters ?? new Dictionary<string, string>();
+
+        if (!queryString.TryGetValue("locationId", out var locationId) ||
             string.IsNullOrEmpty(locationId))
         {
             throw new ValidationException("Location ID is required.");
         }
 
-        if (!request.QueryStringParameters.TryGetValue("type", out var typeString) ||
-            !Enum.TryParse(typeString, true, out FeedbackType type))
+        // Default values
+        FeedbackType type = FeedbackType.Service;
+        SortingOrder sortOrder = SortingOrder.NewestFirst;
+        int page = 1;
+
+        if (queryString.TryGetValue("type", out var typeString) && !string.IsNullOrEmpty(typeString))
         {
-            throw new ValidationException("Invalid or missing feedback type.");
+            if (!Enum.TryParse(typeString, true, out type))
+            {
+                throw new ValidationException("Invalid feedback type.");
+            }
         }
 
-        if (!request.QueryStringParameters.TryGetValue("sort", out var sortString) ||
-            !Enum.TryParse(sortString, true, out SortingOrder sortOrder))
+        if (queryString.TryGetValue("sort", out var sortString) && !string.IsNullOrEmpty(sortString))
         {
-            throw new ValidationException("Invalid or missing sorting order.");
+            if (!Enum.TryParse(sortString, true, out sortOrder))
+            {
+                throw new ValidationException("Invalid sorting order.");
+            }
         }
 
-        if (!request.QueryStringParameters.TryGetValue("page", out var pageString) ||
-            !int.TryParse(pageString, out int page) || page < 1)
+        if (queryString.TryGetValue("page", out var pageString) && !string.IsNullOrEmpty(pageString))
         {
-            throw new ValidationException("Invalid or missing page number.");
+            if (!int.TryParse(pageString, out page) || page < 1)
+            {
+                throw new ValidationException("Invalid page number.");
+            }
         }
 
         return new FeedbackQueryParameters

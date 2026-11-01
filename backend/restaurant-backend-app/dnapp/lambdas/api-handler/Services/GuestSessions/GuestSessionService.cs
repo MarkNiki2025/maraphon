@@ -490,12 +490,23 @@ public class GuestSessionService(
             ))
             .ToList();
 
-        order.Dishes = consolidatedDishes.Select(c => new OrderItem
+        foreach (var consolidatedDish in consolidatedDishes)
         {
-            DishId = c.DishId,
-            Quantity = c.Quantity,
-            State = OrderItemState.Pending
-        }).ToList();
+            var existingOrderItem = order.Dishes.FirstOrDefault(d => d.DishId == consolidatedDish.DishId);
+            if (existingOrderItem != null)
+            {
+                existingOrderItem.Quantity += consolidatedDish.Quantity;
+            }
+            else
+            {
+                order.Dishes.Add(new OrderItem
+                {
+                    DishId = consolidatedDish.DishId,
+                    Quantity = consolidatedDish.Quantity,
+                    State = OrderItemState.Pending
+                });
+            }
+        }
 
         order.Status = OrderStatus.SubmittedByCustomer;
         group.Status = GroupReservationStatus.Submitted;
@@ -506,6 +517,7 @@ public class GuestSessionService(
         return consolidatedDishes;
     }
 }
+
 
 
 
