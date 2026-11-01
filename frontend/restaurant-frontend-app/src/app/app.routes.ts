@@ -53,9 +53,11 @@ export const routes: Routes = [
     component: MainLayoutComponent,
     children: [
       {
-        path: '',
-        redirectTo: 'main',
-        pathMatch: 'full',
+        path: 'reservations/:reservationId/group-order',
+        canActivate: [AuthGuard],
+        data: { authorized: true },
+        loadComponent: () =>
+          import('./pages/group-order-page/group-order-page').then((m) => m.GroupOrderPageComponent),
       },
       {
         canActivate: [AuthGuard],

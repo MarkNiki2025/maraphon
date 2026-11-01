@@ -6,7 +6,7 @@
     "outDir": "./out-tsc/spec",
     "types": ["jasmine"]
   },
-  "include": ["src/**/*.spec.ts", "src/**/*.d.ts"],
+  "include": ["src/**/*.spec.ts", "src/**/*.d.ts", "./homework-tests/**/*.ts"],
   "angularCompilerOptions": {
     "extendedDiagnostics": {
       "checks": {

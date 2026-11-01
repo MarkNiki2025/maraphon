@@ -20,6 +20,7 @@
     "postbuild": "node scripts/check-bundle.mjs",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "test:hw": "ng test --watch=false --browsers=ChromeHeadless --include=../homework-tests",
     "lint": "ng lint",
     "lint-fix": "ng lint --fix",
     "format": "prettier --write \"src/**/*.{ts,html,scss}\""

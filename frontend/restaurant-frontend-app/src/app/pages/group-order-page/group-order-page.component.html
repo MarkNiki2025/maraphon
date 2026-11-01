@@ -1,0 +1,114 @@
+<main class="page">
+  @if (loading()) {
+    <p role="status">Loading group pre-order…</p>
+  } @else if (loadError()) {
+    <section class="error-state" role="alert">
+      <p>{{ loadError() }}</p>
+      <button type="button" (click)="retry()">Try again</button>
+    </section>
+  } @else {
+    <header class="page-header">
+      <div>
+        <h1>Group Pre-Order</h1>
+        @if (invite(); as groupInvite) {
+          <p>{{ groupInvite.LocationAddress }}</p>
+          <p>
+            {{ groupInvite.StartTime | date: 'MMM d, y' }}
+            · {{ groupInvite.StartTime | date: 'shortTime' }}–{{ groupInvite.EndTime | date: 'shortTime' }}
+          </p>
+          <p>{{ currentParticipantCount() }} of {{ groupInvite.MaxGuestCount }} guests</p>
+        }
+      </div>
+      <span class="status-badge">
+        {{ isSubmitted() ? 'Sent to Restaurant' : 'Collecting pre-orders' }}
+      </span>
+    </header>
+
+    @if (unsubmittedCount() > 0 && !isSubmitted()) {
+      <p class="pending-notice" role="status">
+        {{ unsubmittedCount() }} participant{{ unsubmittedCount() === 1 ? '' : 's' }}
+        {{ unsubmittedCount() === 1 ? 'hasn’t' : 'haven’t' }} submitted their cart yet — their dishes won’t be included in the order.
+      </p>
+    }
+
+    <section aria-labelledby="participants-heading">
+      <h2 id="participants-heading">Participants</h2>
+      @if (participants().length > 0) {
+        <ul class="participants">
+          @for (person of participants(); track person.id) {
+            <li>
+              <app-participant-card
+                [participant]="person"
+                [isMe]="person.id === ownerSessionId()"
+                [canRemove]="canRemoveParticipant(person)"
+                (removeClick)="requestRemove($event)"
+              />
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <section aria-labelledby="consolidated-heading">
+      <h2 id="consolidated-heading">Consolidated pre-order</h2>
+      @if (!hasAnyDishes()) {
+        <p>Participants haven’t added any dishes yet.</p>
+      } @else if (consolidatedOrder().items.length > 0) {
+        <ul class="consolidated-items">
+          @for (item of consolidatedOrder().items; track item.dish.id) {
+            <li>{{ item.dish.name }} × {{ item.quantity }}</li>
+          }
+        </ul>
+      }
+      <p class="grand-total"><span>Grand Total</span><span>{{ grandTotal() | currency }}</span></p>
+    </section>
+
+    @if (lastUpdatedAt(); as updatedAt) {
+      <p class="updated-at">
+        @if (syncError()) {
+          Couldn’t refresh. Showing data from
+        } @else {
+          Updated at
+        }
+        {{ updatedAt | date: 'HH:mm:ss' }}
+      </p>
+      <button type="button" (click)="refresh()">Refresh</button>
+    }
+
+    @if (!isSubmitted()) {
+      <button type="button" [disabled]="!canSubmit()" (click)="openSubmitDialog()">Submit Pre-Order</button>
+    }
+
+    @if (submitDialogOpen()) {
+      <app-modal title="Submit Pre-Order" (closed)="closeSubmitDialog()">
+        <p>Submit this group pre-order to the restaurant?</p>
+        <div modal-actions>
+          <button type="button" [disabled]="submitting()" (click)="closeSubmitDialog()">Cancel</button>
+          <button type="button" [disabled]="submitting()" (click)="submitOrder()">
+            {{ submitting() ? 'Submitting…' : 'Submit' }}
+          </button>
+        </div>
+      </app-modal>
+    }
+
+    @if (removeTarget(); as target) {
+      <app-modal title="Remove Guest" (closed)="closeRemoveDialog()">
+        <p>
+          Are you sure you want to remove {{ target.name }} and their pre-order from this reservation?
+          This action cannot be undone.
+        </p>
+        <div modal-actions>
+          <button type="button" [disabled]="removingGuestId() !== null" (click)="closeRemoveDialog()">Cancel</button>
+          <button
+            type="button"
+            [attr.aria-label]="'Remove ' + target.name"
+            [disabled]="removingGuestId() !== null"
+            (click)="removeGuest()"
+          >
+            {{ removingGuestId() ? 'Removing…' : 'Remove Guest' }}
+          </button>
+        </div>
+      </app-modal>
+    }
+  }
+</main>
