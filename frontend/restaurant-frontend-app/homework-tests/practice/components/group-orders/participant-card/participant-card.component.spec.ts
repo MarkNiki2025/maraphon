@@ -2,7 +2,7 @@
 // Запуск: npm run test:hw
 import { TestBed } from '@angular/core/testing';
 import { Participant } from '@app/models/group-orders/participant.model';
-import { ParticipantCardComponent } from '../../../../../src/app/components/group-orders/participant-card/participant-card.component';
+import { ParticipantCardComponent } from '../../../../../src/app/components/group-orders/participant-card/participant-card/participant-card.component';
 
 const OLENA: Participant = {
   id: 'olena',

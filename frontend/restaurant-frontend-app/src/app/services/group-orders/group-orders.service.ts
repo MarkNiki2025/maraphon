@@ -1,5 +1,5 @@
 import { HttpClient, HttpContext } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable} from '@angular/core';
 import { Observable, map, switchMap } from 'rxjs';
 import { SKIP_ERROR_TOAST } from '@app/auth/skip-error-toast.context';
 import { GroupSessionsResponse } from '@app/models/group-orders/group-sessions-response.model';
@@ -67,4 +67,6 @@ export class GroupOrdersService {
   private requestContext(options: RequestOptions): HttpContext {
     return new HttpContext().set(SKIP_ERROR_TOAST, options.silent ?? false);
   }
+
 }
+

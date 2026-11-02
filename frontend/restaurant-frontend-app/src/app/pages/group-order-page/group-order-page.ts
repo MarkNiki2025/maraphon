@@ -5,7 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { EMPTY, catchError, forkJoin, interval, switchMap } from 'rxjs';
 import { GROUP_ORDER_PREVIEW } from '@app/shared/mocks/group-orders/group-order.preview';
-import { ParticipantCardComponent } from '@app/components/group-orders/participant-card/participant-card.component';
+import { ParticipantCardComponent } from '@app/components/group-orders/participant-card/participant-card/participant-card.component';
 import { GroupSessionsResponse } from '@app/models/group-orders/group-sessions-response.model';
 import { GroupReservationStatus } from '@app/models/group-orders/group-status.model';
 import { Participant } from '@app/models/group-orders/participant.model';
